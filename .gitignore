@@ -1,0 +1,5 @@
+*.npy
+*.pyc
+
+pretrained_models/detection_final
+pretrained_models/proposal_final
