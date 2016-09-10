@@ -1,48 +1,68 @@
-from keras.layers import Convolution2D, MaxPooling2D
+import tensorflow as tf
+import numpy as np
 
 
-def load_proposal_model(model_npy):
-    assert len(model_npy) == 32
-    conv1_1 = Convolution2D(64, 3, 3, border_mode='same', activation='relu', name='conv1_1', weights=model_npy[0:2])
-    conv1_2 = Convolution2D(64, 3, 3, border_mode='same', activation='relu', name='conv1_2', weights=model_npy[2:4])
-    pool1 = MaxPooling2D((2, 2), border_mode='same', name='pool1')
+def var(weight):
+    return tf.Variable(weight, tf.float32)
 
-    conv2_1 = Convolution2D(128, 3, 3, border_mode='same', activation='relu', name='conv2_1', weights=model_npy[4:6])
-    conv2_2 = Convolution2D(128, 3, 3, border_mode='same', activation='relu', name='conv2_2', weights=model_npy[6:8])
-    pool2 = MaxPooling2D((2, 2), border_mode='same', name='pool2')
 
-    conv3_1 = Convolution2D(256, 3, 3, border_mode='same', activation='relu', name='conv3_1', weights=model_npy[8:10])
-    conv3_2 = Convolution2D(256, 3, 3, border_mode='same', activation='relu', name='conv3_2', weights=model_npy[10:12])
-    conv3_3 = Convolution2D(256, 3, 3, border_mode='same', activation='relu', name='conv3_3', weights=model_npy[12:14])
-    pool3 = MaxPooling2D((2, 2), border_mode='same', name='pool3')
+def conv(inp, w, b, relu=True):
+    var_w = var(w)
+    var_b = var(b)
+    out = tf.nn.bias_add(tf.nn.conv2d(inp, var_w, [1, 1, 1, 1], 'SAME', True), var_b)
 
-    conv4_1 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv4_1', weights=model_npy[14:16])
-    conv4_2 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv4_2', weights=model_npy[16:18])
-    conv4_3 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv4_3', weights=model_npy[18:20])
-    pool4 = MaxPooling2D((2, 2), border_mode='same', name='pool4')
+    if relu:
+        return tf.nn.relu(out)
+    else:
+        return out
 
-    conv5_1 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv5_1', weights=model_npy[20:22])
-    conv5_2 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv5_2', weights=model_npy[22:24])
-    conv5_3 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv5_3', weights=model_npy[24:26])
 
-    conv_proposal1 = Convolution2D(512, 3, 3, border_mode='same', activation='relu', name='conv_proposal1', weights=model_npy[26:28])
-    proposal_bbox_pred = Convolution2D(18, 1, 1, border_mode='same', name='proposal_bbox_pred', weights=model_npy[28:30])
-    proposal_cls_prob = Convolution2D(36, 1, 1, border_mode='same', activation='softmax', name='proposal_cls_prob', weights=model_npy[30:32])
+def pool2x2(inp):
+    return tf.nn.max_pool(inp, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
 
-    return (conv1_1, conv1_2, pool1,
-            conv2_1, conv2_2, pool2,
-            conv3_1, conv3_2, conv3_3, pool3,
-            conv4_1, conv4_2, conv4_3, pool4,
-            conv5_1, conv5_2, conv5_3,
-            conv_proposal1, proposal_bbox_pred, proposal_cls_prob)
+
+def load_proposal_model(ws):
+    assert len(ws) == 32
+    blob = tf.placeholder(tf.float32)
+
+    conv1_1 = conv(blob, ws[0], ws[1])
+    conv1_2 = conv(conv1_1, ws[2], ws[3])
+    pool1 = pool2x2(conv1_2)
+
+    conv2_1 = conv(pool1, ws[4], ws[5])
+    conv2_2 = conv(conv2_1, ws[6], ws[7])
+    pool2 = pool2x2(conv2_2)
+
+    conv3_1 = conv(pool2, ws[8], ws[9])
+    conv3_2 = conv(conv3_1, ws[10], ws[11])
+    conv3_3 = conv(conv3_2, ws[12], ws[13])
+    pool3 = pool2x2(conv3_3)
+
+    conv4_1 = conv(pool3, ws[14], ws[15])
+    conv4_2 = conv(conv4_1, ws[16], ws[17])
+    conv4_3 = conv(conv4_2, ws[18], ws[19])
+    pool4 = pool2x2(conv4_3)
+
+    conv5_1 = conv(pool4, ws[20], ws[21])
+    conv5_2 = conv(conv5_1, ws[22], ws[23])
+    conv5_3 = conv(conv5_2, ws[24], ws[25])
+
+    conv_proposal1 = conv(conv5_3, ws[26], ws[27])
+
+    proposal_bbox_pred = conv(conv_proposal1, ws[30], ws[31], relu=False)
+
+    proposal_cls_score = conv(conv_proposal1, ws[28], ws[29], relu=False)
+    reshape_score = tf.reshape(proposal_cls_score, [-1, 2])
+    proposal_cls_prob = tf.nn.softmax(reshape_score)
+
+    return blob, proposal_bbox_pred, proposal_cls_prob, conv_proposal1
 
 
 def proposal_test_model(sess, im_input, layers):
-    blob = im_input
-    for i in range(18):
-        blob = layers[i](blob)
+    blob, proposal_bbox_pred, proposal_cls_prob, conv_proposal1 = layers
 
-    proposal_bbox_pred_output = layers[-2](blob)
-    proposal_cls_prob_output = layers[-1](blob)
+    if len(im_input.shape) == 3:
+        im_input = im_input[np.newaxis, :, :, :]
 
-    return sess.run([proposal_bbox_pred_output, proposal_cls_prob_output, blob])
+    return sess.run([proposal_bbox_pred, proposal_cls_prob, conv_proposal1],
+                    feed_dict={blob: im_input})
