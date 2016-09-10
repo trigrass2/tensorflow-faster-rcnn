@@ -4,10 +4,10 @@ import tensorflow as tf
 
 def load_detection_model(model_npy):
     assert len(model_npy) == 8
-    fc6 = Dense(4096, activation='relu', name='fc6').set_weights(model_npy[0:2])
-    fc7 = Dense(4096, activation='relu', name='fc7').set_weights(model_npy[2:4])
-    cls_prob = Dense(21, activation='softmax', name='cls_prob').set_weights(model_npy[4:6])
-    bbox_pred = Dense(84, name='bbox_pred').set_weights(model_npy[6:8])
+    fc6 = Dense(4096, activation='relu', name='fc6', weights=model_npy[0:2])
+    fc7 = Dense(4096, activation='relu', name='fc7', weights=model_npy[2:4])
+    cls_prob = Dense(21, activation='softmax', name='cls_prob', weights=model_npy[4:6])
+    bbox_pred = Dense(84, name='bbox_pred', weights=model_npy[6:8])
     return fc6, fc7, cls_prob, bbox_pred
 
 

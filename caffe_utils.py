@@ -32,3 +32,5 @@ def extract_caffe_weights(net_file, weights_file, save_file_name):
         # TODO: add BatchNorm params extraction
 
     np.save(save_file_name, params)
+
+    return params
