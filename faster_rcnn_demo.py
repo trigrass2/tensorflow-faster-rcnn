@@ -5,17 +5,14 @@ from caffe_utils import extract_caffe_weights
 from fast_rcnn_utils import filter_boxes
 from nms import nms
 from tools import plot_image_with_bbox
+from config import faster_rcnn_voc0712_vgg
 
 import cv2
 import numpy as np
-import namedtuple
 import tensorflow as tf
 
 image_name_list = ['1.jpg']
-
-config = namedtuple('proposal',
-                    'detection',
-                    'nms')
+config = faster_rcnn_voc0712_vgg()
 
 try:
     proposal_weights = np.load('models/vgg16_proposal_model.npy')
@@ -38,7 +35,7 @@ sess.run(tf.initialize_all_variables())
 
 for name in image_name_list:
     im = cv2.imread(name)[:, :, ::-1]
-    im_prec = process_image(im, config.image_process)
+    im_prec = process_image(im, config.proposal)
     boxes, scores, feats = proposal_test_model(sess, im_prec, proposal_layers, config.proposal)
     boxes, scores = filter_boxes(boxes, scores, config.nms_before)
 
