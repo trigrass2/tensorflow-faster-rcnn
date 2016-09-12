@@ -1,24 +1,6 @@
 import tensorflow as tf
 import numpy as np
-
-
-def var(weight):
-    return tf.Variable(weight, tf.float32)
-
-
-def conv(inp, w, b, relu=True):
-    var_w = var(w)
-    var_b = var(b)
-    out = tf.nn.bias_add(tf.nn.conv2d(inp, var_w, [1, 1, 1, 1], 'SAME', True), var_b)
-
-    if relu:
-        return tf.nn.relu(out)
-    else:
-        return out
-
-
-def pool2x2(inp):
-    return tf.nn.max_pool(inp, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+from tf_utils import conv, pool2x2
 
 
 def load_proposal_model(ws):
