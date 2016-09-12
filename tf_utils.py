@@ -8,13 +8,13 @@ def var(weight):
 def fc(inp, w, b, act='relu'):
     var_w = var(w)
     var_b = var(b)
-    out = tf.nn.wxs(inp, var_w, var_b)
+    out = tf.nn.bias_add(tf.matmul(inp, var_w), var_b)
     if act == 'relu':
         return tf.nn.relu(out)
     elif act == 'linear':
         return out
     elif act == 'softmax':
-        return tf.nn.softmax(act)
+        return tf.nn.softmax(out)
     else:
         raise NotImplementedError
 

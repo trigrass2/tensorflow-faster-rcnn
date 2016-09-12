@@ -1,9 +1,12 @@
 import numpy as np
 
 
-def filter_boxes(boxes):
+def filter_boxes(boxes, scores, config_proposal):
     """filter out invalid boxes"""
-    pass
+    do transform
+    filter out invalid boxes
+    do nms
+    return boxes
 
 
 def fast_rcnn_bbox_transform(ex_boxes, gt_boxes):
