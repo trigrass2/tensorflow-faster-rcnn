@@ -1,6 +1,6 @@
 from preprocessing import process_image
 from proposal_test_model import load_proposal_model, proposal_test_model
-from detection_test_model import load_detection_model, roi_pooling_layer, detection_test_model
+from detection_test_model import load_detection_model, detection_test_model
 from caffe_utils import extract_caffe_weights
 from fast_rcnn_utils import filter_boxes
 from nms import nms
@@ -37,11 +37,9 @@ for name in image_name_list:
     im = cv2.imread(name)[:, :, ::-1]
     im_prec = process_image(im, config.proposal)
     boxes, scores, feats = proposal_test_model(sess, im_prec, proposal_layers, config.proposal)
-    boxes, scores = filter_boxes(boxes, scores, config.nms_before)
+    boxes = filter_boxes(boxes, scores, config.proposal)
 
-    roi_output = roi_pooling_layer(feats, boxes)
-
-    boxes, scores = detection_test_model(sess, roi_output, detection_layers, config.detection)
-    boxes, scores = nms(boxes, scores, config.nms_final)
+    boxes, scores = detection_test_model(sess, feats, boxes, detection_layers)
+    boxes, scores = nms(boxes, scores, config.detection)
 
     plot_image_with_bbox(im, boxes, scores, config.classes)
