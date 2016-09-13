@@ -1,12 +1,53 @@
 import numpy as np
 
 
-def filter_boxes(boxes, scores, config_proposal):
+def generate_proposal_boxes(feature_map_size, deltas, scores, im_size, scaled_im_size, config_proposal):
     """filter out invalid boxes"""
-    do transform
-    filter out invalid boxes
-    do nms
+    deltas = np.reshape(deltas, [-1, 4])
+
+    anchors = locate_anchors(feature_map_size, config_proposal.feat_stride, config_proposal.anchors)
+    pred_boxes = fast_rcnn_bbox_transform_inv(anchors, deltas)
+    scale = (np.array([im_size[1], im_size[0], im_size[1], im_size[0]]) - 1.0) / (np.array([scaled_im_size[1], scaled_im_size[0], scaled_im_size[1], scaled_im_size[0]]) - 1.0)
+    pred_boxes = pred_boxes * scale + 1
+    pred_boxes = clip_boxes(pred_boxes, im_size)
+    scores = scores[:, 1]
+    pred_boxes, scores = filter_boxes(config_proposal.min_box_size, pred_boxes, scores)
+    indx = np.argsort(scores)[::-1]
+    pred_boxes = pred_boxes[indx]
+    scores = scores[indx]
+
+    return pred_boxes, scores
+
+
+def clip_boxes(boxes, im_size):
+    h, w = im_size
+    boxes[:, 0::2] = np.maximum(np.minimum(boxes[:, ::2], w), 1)
+    boxes[:, 1::2] = np.maximum(np.minimum(boxes[:, ::2], h), 1)
     return boxes
+
+
+def filter_boxes(min_box_size, boxes, scores):
+    w = boxes[:, 2] - boxes[:, 0] + 1
+    h = boxes[:, 3] - boxes[:, 1] + 1
+    ind = (w >= min_box_size) * (h >= min_box_size)
+    boxes = boxes[ind]
+    scores = scores[ind]
+
+    return boxes, scores
+
+
+def locate_anchors(feature_map_size, feat_stride, anchors):
+    # feature_map_size, normally tensor.shape = (height, width)
+    # however, interpret as (y, x)
+    y, x = feature_map_size
+    meshgrid = np.mgrid[0:y, 0:x] * feat_stride
+    shift_anchors = []
+    for i in range(y):
+        for j in range(x):
+            shift_y, shift_x = meshgrid[:, i, j]
+            shift_anchors.append(anchors + np.array([shift_x, shift_y, shift_x, shift_y]))
+
+    return np.asarray(shift_anchors).reshape((-1, 4))
 
 
 def fast_rcnn_bbox_transform(ex_boxes, gt_boxes):

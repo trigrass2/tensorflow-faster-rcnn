@@ -41,9 +41,12 @@ Proposal = namedtuple('Proposal', ['drop_boxes_runoff_image',
                                    'image_means',
                                    'max_size',
                                    'min_box_size',
-                                   'nms',
+                                   'per_nms_topN',
+                                   'nms_overlap_thres',
+                                   'after_nms_topN',
                                    'scales',
-                                   'anchors'])
+                                   'anchors',
+                                   'feat_stride'])
 
 Detection = namedtuple('Detection', ['max_size',
                                      'nms',
@@ -53,7 +56,7 @@ Detection = namedtuple('Detection', ['max_size',
 def faster_rcnn_voc0712_vgg():
     Config = namedtuple('Config', ['proposal', 'detection'])
 
-    proposal = Proposal(True, image_means, 1000, 16, 0.3, 600, anchors)
+    proposal = Proposal(True, image_means, 1000, 16, 6000, 0.7, 300, 600, anchors, 16)
     detection = Detection(1000, 0.3, 600)
     config = Config(proposal, detection)
 
