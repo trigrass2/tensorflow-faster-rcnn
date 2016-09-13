@@ -39,9 +39,9 @@ for name in image_name_list:
     deltas, scores, feats = proposal_test_model(sess, im_prec, proposal_layers)
     pred_boxes = generate_proposal_boxes(feats.shape[1:3], deltas, scores, im.shape[0:2], im_prec.shape[0:2], config.proposal)
 
-    aboxes = boxes_filter(pred_boxes, scores, config.proposal)
+    pred_boxes = boxes_filter(pred_boxes, scores, config.proposal)
 
-    deltas, scores = detection_test_model(sess, feats, aboxes, detection_layers)
+    deltas, scores = detection_test_model(sess, feats, pred_boxes, detection_layers)
     boxes = transform(deltas)
     boxes, scores = nms(boxes, scores, config.detection)
 

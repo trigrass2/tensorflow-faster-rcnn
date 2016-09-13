@@ -21,8 +21,8 @@ def generate_proposal_boxes(feature_map_size, deltas, scores, im_size, scaled_im
 
 def clip_boxes(boxes, im_size):
     h, w = im_size
-    boxes[:, 0::2] = np.maximum(np.minimum(boxes[:, ::2], w), 1)
-    boxes[:, 1::2] = np.maximum(np.minimum(boxes[:, ::2], h), 1)
+    boxes[:, 0::2] = np.maximum(np.minimum(boxes[:, 0::2], w), 1)
+    boxes[:, 1::2] = np.maximum(np.minimum(boxes[:, 1::2], h), 1)
     return boxes
 
 

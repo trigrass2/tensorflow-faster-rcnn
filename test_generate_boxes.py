@@ -3,6 +3,7 @@ from proposal_test_model import load_proposal_model, proposal_test_model
 from caffe_utils import extract_caffe_weights
 from fast_rcnn_utils import generate_proposal_boxes
 from config import faster_rcnn_voc0712_vgg
+from nms import boxes_filter
 
 import cv2
 import numpy as np
@@ -38,4 +39,10 @@ for name in image_name_list:
     im = cv2.imread(name)[:, :, ::-1]
     im_prec = process_image(im, config.proposal)
     deltas, scores, feats = proposal_test_model(sess, im_prec, proposal_layers)
+    # ipdb.set_trace()
     pred_boxes, scores = generate_proposal_boxes(feats.shape[1:3], deltas, scores, im.shape[0:2], im_prec.shape[0:2], config.proposal)
+    pred_boxes = boxes_filter(pred_boxes, scores, config.proposal)
+
+from tools import plot_image_with_bbox
+
+plot_image_with_bbox(im, pred_boxes[:20])
