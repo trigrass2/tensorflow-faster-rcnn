@@ -24,7 +24,7 @@ classes = [
     'tvmonitor'
 ]
 
-image_means = [123.6800, 116.7790, 103.9390]
+image_means = [103.9390, 116.7790, 123.6800]  # BGR order
 
 anchors = np.asarray(
     [[-83, -39, 100, 56],

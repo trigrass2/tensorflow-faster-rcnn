@@ -34,7 +34,7 @@ sess = tf.Session()
 sess.run(tf.initialize_all_variables())
 
 for name in image_name_list:
-    im = cv2.imread(name)[:, :, ::-1]
+    im = cv2.imread(name)
     im_prec = process_image(im, config.proposal)
     deltas, scores, feats = proposal_test_model(sess, im_prec, proposal_layers)
     pred_boxes = generate_proposal_boxes(feats.shape[1:3], deltas, scores, im.shape[0:2], im_prec.shape[0:2], config.proposal)
