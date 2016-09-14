@@ -27,20 +27,26 @@ def roi_pooling_layer(data, roi):
     roi_num = len(roi)
     outlist = []
     for i in xrange(roi_num):
-        st_h, st_w, cp_h, cp_w = roi[i]
+        st_w, st_h, ed_w, ed_h = roi[i]
+        cp_h = ed_h - st_h + 1
+        cp_w = ed_w - st_w + 1
 
         pool_sz_h = cp_h // pooled_h
         pool_sz_w = cp_w // pooled_w
 
-        real_cp_h = pooled_h * pool_sz_h
-        real_cp_w = pooled_w * pool_sz_w
+        if pool_sz_h > 0 and pool_sz_w > 0:
+            real_cp_h = pooled_h * pool_sz_h
+            real_cp_w = pooled_w * pool_sz_w
 
-        cropped_feature = tf.slice(data, [0, st_h, st_w, 0], [1, real_cp_h, real_cp_w, -1])
+            cropped_feature = tf.slice(data, [0, st_h, st_w, 0], [1, real_cp_h, real_cp_w, -1])
 
-        outlist.append(tf.nn.max_pool(cropped_feature,
-                                      ksize=[1, pool_sz_h, pool_sz_w, 1],
-                                      strides=[1, pool_sz_h, pool_sz_w, 1],
-                                      padding='SAME'))
+            outlist.append(tf.nn.max_pool(cropped_feature,
+                                          ksize=[1, pool_sz_h, pool_sz_w, 1],
+                                          strides=[1, pool_sz_h, pool_sz_w, 1],
+                                          padding='SAME'))
+        else:
+            outlist.append(tf.zeros(shape=(1, 7, 7, 512)))
+
     return tf.concat(0, outlist)
 
 
@@ -50,7 +56,8 @@ def map_rois_to_feat_rois(boxes, scale):
         boxes: N x 4
         scale: scalar
     """
-    return np.asarray((boxes - 1) * scale + 1, dtype=int)
+    rescaled_rois = np.asarray((boxes - 1) * scale + 1, dtype=int)
+    return np.asarray(rescaled_rois / 16.0, dtype=int)
 
 
 def detection_test_model(sess, feats, boxes, layers, scale):

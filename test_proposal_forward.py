@@ -14,5 +14,5 @@ sess.run(tf.initialize_all_variables())
 
 im = cv2.imread('data/000005.jpg')
 
-im_prec = process_image(im, config.proposal)
+im_prec, _ = process_image(im, config.proposal)
 boxes, scores, feats = proposal_test_model(sess, im_prec, proposal_layers)

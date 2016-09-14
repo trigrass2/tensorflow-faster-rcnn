@@ -53,3 +53,27 @@ def boxes_filter(boxes, scores, config_proposal):
         aboxes = aboxes[:min(len(aboxes), config_proposal.after_nms_topN)]
 
     return aboxes[:, 0:4]
+
+
+def nms_filter(boxes, scores, config_detection):
+    """
+    boxes: N x 84
+    scores: N x 21
+    """
+    boxes = boxes[:, :80]
+    scores = scores[:, :20]
+
+    pred_boxes = []
+    pred_scores = []
+    labels = []
+    for i in range(scores.shape[1]):
+        aboxes = np.hstack((boxes[:, i * 4: (i + 1) * 4], scores[:, i][:, np.newaxis]))
+        aboxes = aboxes[nms(aboxes, config_detection.nms_overlap_thres)]
+        if np.any(aboxes):
+            pred_boxes.append(aboxes[:, :4])
+            pred_scores.append(aboxes[:, 4])
+            labels.append(np.ones(len(pred_scores), dtype=int) * i)
+
+    pred_boxes, pred_scores, pred_labels = np.concatenate(pred_boxes), np.concatenate(pred_scores), np.concatenate(labels)
+    indx = pred_scores > config_detection.min_score
+    return pred_boxes[indx], pred_scores[indx], pred_labels[indx]

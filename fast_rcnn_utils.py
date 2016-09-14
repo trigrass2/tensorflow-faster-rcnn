@@ -19,6 +19,20 @@ def generate_proposal_boxes(feature_map_size, deltas, scores, im_size, scaled_im
     return pred_boxes, scores
 
 
+def generate_detection_boxes(deltas, boxes, im_size):
+    """
+    Args:
+        deltas: N x 84
+    """
+    pred_boxes = []
+    for i in range(21):
+        b = fast_rcnn_bbox_transform_inv(boxes, deltas[:, i * 4: (i + 1) * 4])
+        b = clip_boxes(b, im_size)
+        pred_boxes.append(b)
+
+    return np.hstack(pred_boxes)
+
+
 def clip_boxes(boxes, im_size):
     h, w = im_size
     boxes[:, 0::2] = np.maximum(np.minimum(boxes[:, 0::2], w), 1)

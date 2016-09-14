@@ -13,7 +13,7 @@ def process_image(im, proposal):
     nrow, ncol = int(h * im_scale), int(w * im_scale)
     im = cv2.resize(im, (ncol, nrow))
 
-    return im
+    return im, im_scale
 
 
 def prep_im_scale(im_size, target_size, max_size):

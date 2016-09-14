@@ -2,25 +2,25 @@ from collections import namedtuple
 import numpy as np
 
 classes = [
-    'aeroplane'
-    'bicycle'
-    'bird'
-    'boat'
-    'bottle'
-    'bus'
-    'car'
-    'cat'
-    'chair'
-    'cow'
-    'diningtable'
-    'dog'
-    'horse'
-    'motorbike'
-    'person'
-    'pottedplant'
-    'sheep'
-    'sofa'
-    'train'
+    'aeroplane',
+    'bicycle',
+    'bird',
+    'boat',
+    'bottle',
+    'bus',
+    'car',
+    'cat',
+    'chair',
+    'cow',
+    'diningtable',
+    'dog',
+    'horse',
+    'motorbike',
+    'person',
+    'pottedplant',
+    'sheep',
+    'sofa',
+    'train',
     'tvmonitor'
 ]
 
@@ -49,7 +49,8 @@ Proposal = namedtuple('Proposal', ['drop_boxes_runoff_image',
                                    'feat_stride'])
 
 Detection = namedtuple('Detection', ['max_size',
-                                     'nms',
+                                     'nms_overlap_thres',
+                                     'min_score',
                                      'scales'])
 
 
@@ -57,7 +58,7 @@ def faster_rcnn_voc0712_vgg():
     Config = namedtuple('Config', ['proposal', 'detection'])
 
     proposal = Proposal(True, image_means, 1000, 16, 6000, 0.7, 300, 600, anchors, 16)
-    detection = Detection(1000, 0.3, 600)
+    detection = Detection(1000, 0.3, 0.6, 600)
     config = Config(proposal, detection)
 
     return config
