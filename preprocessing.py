@@ -1,5 +1,5 @@
 import cv2
-
+from resize import imresize
 
 def process_image(im, proposal):
     max_size = proposal.max_size
@@ -11,8 +11,8 @@ def process_image(im, proposal):
     im_scale = prep_im_scale([h, w], target_size, max_size)
 
     nrow, ncol = int(h * im_scale), int(w * im_scale)
-    im = cv2.resize(im, (ncol, nrow))
-
+    # im = cv2.resize(im, (ncol, nrow), interpolation=cv2.INTER_CUBIC)
+    im = imresize(im, ncol, nrow)
     return im, im_scale
 
 

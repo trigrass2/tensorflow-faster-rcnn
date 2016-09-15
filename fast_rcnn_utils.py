@@ -8,9 +8,11 @@ def generate_proposal_boxes(feature_map_size, deltas, scores, im_size, scaled_im
     anchors = locate_anchors(feature_map_size, config_proposal.feat_stride, config_proposal.anchors)
     pred_boxes = fast_rcnn_bbox_transform_inv(anchors, deltas)
     scale = (np.array([im_size[1], im_size[0], im_size[1], im_size[0]]) - 1.0) / (np.array([scaled_im_size[1], scaled_im_size[0], scaled_im_size[1], scaled_im_size[0]]) - 1.0)
-    pred_boxes = pred_boxes * scale + 1
+    pred_boxes = (pred_boxes - 1) * scale + 1
+
     pred_boxes = clip_boxes(pred_boxes, im_size)
     scores = scores[:, 1]
+
     pred_boxes, scores = filter_boxes(config_proposal.min_box_size, pred_boxes, scores)
     indx = np.argsort(scores)[::-1]
     pred_boxes = pred_boxes[indx]

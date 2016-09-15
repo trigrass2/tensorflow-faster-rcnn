@@ -34,8 +34,13 @@ def load_proposal_model(ws):
     proposal_bbox_pred = conv(conv_proposal1, ws[30], ws[31], relu=False)
 
     proposal_cls_score = conv(conv_proposal1, ws[28], ws[29], relu=False)
-    reshape_score = tf.reshape(proposal_cls_score, [-1, 2])
-    proposal_cls_prob = tf.nn.softmax(reshape_score)
+
+    bg_score, fg_score = tf.split(3, 2, proposal_cls_score)
+    bg_reshape_score = tf.reshape(bg_score, [-1])
+    fg_reshape_score = tf.reshape(fg_score, [-1])
+    final_cls_score = tf.transpose(tf.pack([bg_reshape_score, fg_reshape_score]))
+
+    proposal_cls_prob = tf.nn.softmax(final_cls_score)
 
     return blob, proposal_bbox_pred, proposal_cls_prob, conv_proposal1
 
