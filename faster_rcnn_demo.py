@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from pylab import *
 
-image_name_list = ['data/000005.jpg']
+image_name_list = ['data/000005.jpg', 'data/001763.jpg', 'data/004545.jpg', 'data/000542.jpg', 'data/000456.jpg', 'data/001150.jpg']
 config = faster_rcnn_voc0712_vgg()
 
 try:
@@ -45,5 +45,5 @@ for name in image_name_list:
     boxes = generate_detection_boxes(deltas, pred_boxes, im.shape[0:2])
     pred_boxes, pred_scores, labels = nms_filter(boxes, scores, config.detection)
 
-    plot_image_with_bbox(im, pred_boxes, pred_scores, labels, classes)
+    plot_image_with_bbox(im[:, :, ::-1], pred_boxes, pred_scores, labels, classes)
     show()
