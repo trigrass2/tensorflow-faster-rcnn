@@ -72,7 +72,7 @@ def nms_filter(boxes, scores, config_detection):
         if np.any(aboxes):
             pred_boxes.append(aboxes[:, :4])
             pred_scores.append(aboxes[:, 4])
-            labels.append(np.ones(len(pred_scores), dtype=int) * i)
+            labels.append(np.ones(len(aboxes), dtype=int) * i)
 
     pred_boxes, pred_scores, pred_labels = np.concatenate(pred_boxes), np.concatenate(pred_scores), np.concatenate(labels)
     indx = pred_scores > config_detection.min_score

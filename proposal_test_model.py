@@ -42,14 +42,14 @@ def load_proposal_model(ws):
 
     proposal_cls_prob = tf.nn.softmax(final_cls_score)
 
-    return blob, proposal_bbox_pred, proposal_cls_prob, conv_proposal1
+    return blob, proposal_bbox_pred, proposal_cls_prob, conv5_3
 
 
 def proposal_test_model(sess, im_input, layers):
-    blob, proposal_bbox_pred, proposal_cls_prob, conv_proposal1 = layers
+    blob, proposal_bbox_pred, proposal_cls_prob, conv5_3 = layers
 
     if len(im_input.shape) == 3:
         im_input = im_input[np.newaxis, :, :, :]
 
-    return sess.run([proposal_bbox_pred, proposal_cls_prob, conv_proposal1],
+    return sess.run([proposal_bbox_pred, proposal_cls_prob, conv5_3],
                     feed_dict={blob: im_input})

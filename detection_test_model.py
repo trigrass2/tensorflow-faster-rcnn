@@ -28,8 +28,10 @@ def roi_pooling_layer(data, roi):
     outlist = []
     for i in xrange(roi_num):
         st_w, st_h, ed_w, ed_h = roi[i]
-        cp_h = ed_h - st_h + 1
-        cp_w = ed_w - st_w + 1
+        ed_w = min(ed_w, data.shape[2] - 1)
+        ed_h = min(ed_w, data.shape[1] - 1)
+        cp_h = max(ed_h - st_h + 1, 1)
+        cp_w = max(ed_w - st_w + 1, 1)
 
         pool_sz_h = cp_h // pooled_h
         pool_sz_w = cp_w // pooled_w
@@ -50,20 +52,20 @@ def roi_pooling_layer(data, roi):
     return tf.concat(0, outlist)
 
 
-def map_rois_to_feat_rois(boxes, scale):
+def map_rois_to_feat_rois(boxes, im_scale, upsampling_scale=0.0625):
     """
     Args:
         boxes: N x 4
-        scale: scalar
+        im_scale: scalar
     """
-    rescaled_rois = np.asarray((boxes - 1) * scale + 1, dtype=int)
-    return np.asarray(rescaled_rois / 16.0, dtype=int)
+    rescaled_rois = np.round((boxes - 1) * im_scale) + 1
+    return np.asarray(np.round((rescaled_rois - 1) * upsampling_scale), dtype=int)  # to 0 based index in python
 
 
-def detection_test_model(sess, feats, boxes, layers, scale):
+def detection_test_model(sess, feats, boxes, layers, im_scale, upsampling_scale=0.0625):
 
     roi_blob, cls_prob, bbox_pred = layers
-    feat_boxes = map_rois_to_feat_rois(boxes, scale)
+    feat_boxes = map_rois_to_feat_rois(boxes, im_scale, upsampling_scale)
     roi_output = roi_pooling_layer(feats, feat_boxes)
     roi_blob_data = sess.run(roi_output)
     return sess.run([bbox_pred, cls_prob], feed_dict={roi_blob: roi_blob_data})
