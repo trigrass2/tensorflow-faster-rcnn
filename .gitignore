@@ -1,6 +1,8 @@
 *.npy
 *.pyc
 *.mat
+*.so
+*.c
 
 pretrained_models/detection_final
 pretrained_models/proposal_final
