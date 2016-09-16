@@ -24,10 +24,10 @@ def generate_proposal_boxes(feature_map_size, deltas, scores, im_size, scaled_im
 def generate_detection_boxes(deltas, boxes, im_size):
     """
     Args:
-        deltas: N x 84
+        deltas: N x 80
     """
     pred_boxes = []
-    for i in range(21):
+    for i in range(20):
         b = fast_rcnn_bbox_transform_inv(boxes, deltas[:, i * 4: (i + 1) * 4])
         b = clip_boxes(b, im_size)
         pred_boxes.append(b)

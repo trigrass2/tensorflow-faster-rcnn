@@ -57,12 +57,9 @@ def boxes_filter(boxes, scores, config_proposal):
 
 def nms_filter(boxes, scores, config_detection):
     """
-    boxes: N x 84
-    scores: N x 21
+    boxes: N x 80
+    scores: N x 20
     """
-    boxes = boxes[:, :80]
-    scores = scores[:, :20]
-
     pred_boxes = []
     pred_scores = []
     labels = []

@@ -80,4 +80,6 @@ def detection_test_model(sess, feats, boxes, layers, im_scale, upsampling_scale=
 
     roi_output = roi_pooling_layer(feats, feat_boxes)
 
-    return sess.run([bbox_pred, cls_prob], feed_dict={roi_blob: roi_output})
+    pred_boxes, pred_scores = sess.run([bbox_pred, cls_prob], feed_dict={roi_blob: roi_output})
+
+    return pred_boxes[:, 4:], pred_scores[:, 1:]
