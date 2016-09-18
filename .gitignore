@@ -2,7 +2,8 @@
 *.pyc
 *.mat
 *.so
-*.c
+*.o
+*.cu.o
 
 pretrained_models/detection_final
 pretrained_models/proposal_final
